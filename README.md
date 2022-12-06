@@ -19,12 +19,6 @@
     - [폴리글랏 프로그래밍](#폴리글랏-프로그래밍)
     - [동기식 호출 과 Fallback 처리](#동기식-호출-과-Fallback-처리)
     - [비동기식 호출 과 Eventual Consistency](#비동기식-호출-과-Eventual-Consistency)
-  - [운영](#운영)
-    - [CI/CD 설정](#cicd설정)
-    - [동기식 호출 / 서킷 브레이킹 / 장애격리](#동기식-호출-서킷-브레이킹-장애격리)
-    - [오토스케일 아웃](#오토스케일-아웃)
-    - [무정지 재배포](#무정지-재배포)
-  - [신규 개발 조직의 추가](#신규-개발-조직의-추가)
 
 # 서비스 시나리오
 
@@ -114,14 +108,6 @@
 
 # 분석/설계
 
-
-## AS-IS 조직 (Horizontally-Aligned)
-  ![image](https://user-images.githubusercontent.com/487999/79684144-2a893200-826a-11ea-9a01-79927d3a0107.png)
-
-## TO-BE 조직 (Vertically-Aligned)
-  ![image](https://user-images.githubusercontent.com/487999/79684159-3543c700-826a-11ea-8d5f-a3fc0c4cad87.png)
-
-
 ## Event Storming 결과
 * MSAEz 로 모델링한 이벤트스토밍 결과
 
@@ -130,7 +116,7 @@
 ![image](https://user-images.githubusercontent.com/38934586/205815234-86986993-7f35-456b-be81-8d1cd3b3d242.png)
     
 
-### 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
+### 완성본에 대한 요구사항을 커버하는지 검증
 
 ![image](https://user-images.githubusercontent.com/38934586/205923282-1014cb42-da48-4a03-bdd2-b9c37bec2d80.png)
 
@@ -141,44 +127,16 @@
     - 상점주인이 확인하여 요리한다 (ok)
     - 요리가 완성되면 라이더는 배달타입에 맞게 배달한다 (ok)
 
-![image](https://user-images.githubusercontent.com/487999/79684170-47256a00-826a-11ea-9777-e16fafff519a.png)
+![image](https://user-images.githubusercontent.com/38934586/205923872-890e29d1-2925-4bed-b16d-180d1f775124.png)
 
     - 고객이 주문을 취소할 수 있다 (ok)
     - 주문이 취소되면 배달이 취소된다 (ok)
    
-    
+![image](https://user-images.githubusercontent.com/38934586/205925481-535dcd0c-e568-48a6-83d5-3f8ae24b0c13.png)
     
     - 고객이 주문상태를 중간중간 조회한다 (ok) 
     - 주문상태가 바뀔 때 마다 카톡으로 알림을 보낸다 (ok)
     - 배달이 완료되면 고객은 리뷰를 작성한다(ok)
-
-
-### 모델 수정
-
-![image](https://user-images.githubusercontent.com/487999/79684176-4e4c7800-826a-11ea-8deb-b7b053e5d7c6.png)
-    
-    - 수정된 모델은 모든 요구사항을 커버함.
-
-### 비기능 요구사항에 대한 검증
-
-![image](https://user-images.githubusercontent.com/487999/79684184-5c9a9400-826a-11ea-8d87-2ed1e44f4562.png)
-
-    - 마이크로 서비스를 넘나드는 시나리오에 대한 트랜잭션 처리
-        - 고객 주문시 결제처리:  결제가 완료되지 않은 주문은 절대 받지 않는다는 경영자의 오랜 신념(?) 에 따라, ACID 트랜잭션 적용. 주문와료시 결제처리에 대해서는 Request-Response 방식 처리
-        - 결제 완료시 점주연결 및 배송처리:  App(front) 에서 Store 마이크로서비스로 주문요청이 전달되는 과정에 있어서 Store 마이크로 서비스가 별도의 배포주기를 가지기 때문에 Eventual Consistency 방식으로 트랜잭션 처리함.
-        - 나머지 모든 inter-microservice 트랜잭션: 주문상태, 배달상태 등 모든 이벤트에 대해 카톡을 처리하는 등, 데이터 일관성의 시점이 크리티컬하지 않은 모든 경우가 대부분이라 판단, Eventual Consistency 를 기본으로 채택함.
-
-
-
-
-## 헥사고날 아키텍처 다이어그램 도출
-    
-![image](https://user-images.githubusercontent.com/487999/79684772-eba9ab00-826e-11ea-9405-17e2bf39ec76.png)
-
-
-    - Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
-    - 호출관계에서 PubSub 과 Req/Resp 를 구분함
-    - 서브 도메인과 바운디드 컨텍스트의 분리:  각 팀의 KPI 별로 아래와 같이 관심 구현 스토리를 나눠가짐
 
 
 # 구현:
