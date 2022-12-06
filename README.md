@@ -158,7 +158,7 @@ docker-compose exec -it kafka /bin/bash
 cd /bin
 ./kafka-console-consumer --bootstrap-server localhost:9092 --topic fooddelivery
 ```
-# store 서비스의 Publish
+### store 서비스의 Publish
 - store 마이크로 서비스를 실행한다
 - store 폴더를 선택 -> Open In Terminal -> "mvn spring-boot:run"
   - 기동된 store 서비스를 호출하여 주문을 확인한다
@@ -167,11 +167,8 @@ cd /bin
   - accept 상태를 true로 변경하여 상태가 update되는 것을 확인한다
 ![image](https://user-images.githubusercontent.com/38934586/205937886-7a0f23f2-7322-431a-9f1e-dbd3ddceb624.png)
 
-# store 서비스의 배달처리
-http localhost:8083/주문처리s orderId=1
+## CQRS
 
-# 주문 상태 확인
-http localhost:8081/orders/1
 
 ```
 
