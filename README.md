@@ -131,84 +131,41 @@
 
 ## Gateway
 
-- 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트와 파이선으로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
+- 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
 
 ![image](https://user-images.githubusercontent.com/38934586/205929638-ac2b0e80-76bc-4b3d-8b42-41df2082c9a9.png)
 
 
-```
-cd app
-mvn spring-boot:run
+## Saga(Pub/Sub)
 
-cd store
-mvn spring-boot:run 
+- 마이크로 서비스간의 통신에서 이벤트 메세지를 Pub/Sub하는 방법을 실습한다
+- app서비스에서 orderPlaced 이벤트를 발생하였을 때 store 서비스에서 orderPlaced 이벤트를 수신하여 주문을 접수한다
 
-cd rider
-mvn spring-boot:run  
+### app 서비스의 Publish
 
-cd customer
-mvn spring-boot:run
-```
+- app 마이크로 서비스를 실행한다
+- app 폴더를 선택 -> Open In Terminal -> "mvn spring-boot:run"
+  - 기동된 app 서비스를 호출하여 주문을 요청한다
 
-## DDD 의 적용
+![image](https://user-images.githubusercontent.com/38934586/205934188-14abb090-ca20-46a0-969b-d37e990f7c74.png)
 
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 pay 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 하지만, 일부 구현에 있어서 영문이 아닌 경우는 실행이 불가능한 경우가 있기 때문에 계속 사용할 방법은 아닌것 같다. (Maven pom.xml, Kafka의 topic id, FeignClient 의 서비스 id 등은 한글로 식별자를 사용하는 경우 오류가 발생하는 것을 확인하였다)
+  - kafka 유틸리티가 포함된 위치에 접속하기 위해 docker를 통하여 shell에 진입한다
 
 ```
-package fooddelivery;
+cd kafka
+docker-compose exec -it kafka /bin/bash
 
-import javax.persistence.*;
-import org.springframework.beans.BeanUtils;
-import java.util.List;
-
-@Entity
-@Table(name="결제이력_table")
-public class 결제이력 {
-
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
-    private String orderId;
-    private Double 금액;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-    public Double get금액() {
-        return 금액;
-    }
-
-    public void set금액(Double 금액) {
-        this.금액 = 금액;
-    }
-
-}
-
+cd /bin
+./kafka-console-consumer --bootstrap-server localhost:9092 --topic fooddelivery
 ```
-- Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
-```
-package fooddelivery;
+# store 서비스의 Publish
+- store 마이크로 서비스를 실행한다
+- store 폴더를 선택 -> Open In Terminal -> "mvn spring-boot:run"
+  - 기동된 store 서비스를 호출하여 주문을 확인한다
+![image](https://user-images.githubusercontent.com/38934586/205936503-0cf083a6-2012-44be-8f57-df492c43750a.png)
 
-import org.springframework.data.repository.PagingAndSortingRepository;
-
-public interface 결제이력Repository extends PagingAndSortingRepository<결제이력, Long>{
-}
-```
-- 적용 후 REST API 의 테스트
-```
-# app 서비스의 주문처리
-http localhost:8081/orders item="통닭"
+  - accept 상태를 true로 변경하여 상태가 update되는 것을 확인한다
+![image](https://user-images.githubusercontent.com/38934586/205937886-7a0f23f2-7322-431a-9f1e-dbd3ddceb624.png)
 
 # store 서비스의 배달처리
 http localhost:8083/주문처리s orderId=1
