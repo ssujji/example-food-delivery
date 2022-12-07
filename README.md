@@ -129,13 +129,6 @@
 
 # 구현
 
-## Gateway
-
-- 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
-
-![image](https://user-images.githubusercontent.com/38934586/205929638-ac2b0e80-76bc-4b3d-8b42-41df2082c9a9.png)
-
-
 ## Saga(Pub/Sub)
 
 - 마이크로 서비스간의 통신에서 이벤트 메세지를 Pub/Sub하는 방법을 실습한다
@@ -168,16 +161,20 @@ cd /bin
 ![image](https://user-images.githubusercontent.com/38934586/205937886-7a0f23f2-7322-431a-9f1e-dbd3ddceb624.png)
 
 ## CQRS
+- 고객이 주문상태를 중간중간 조회할 수 있도록 CQRS로 구현하였다
+  - viewpage MSA ViewHandler 를 통해 구현 
+![image](https://user-images.githubusercontent.com/38934586/206192402-a6bd7fdb-da22-4afa-90a7-b06a2df82d7a.png)
 
+- MyPage CRUD 상세설계
 
-```
+![image](https://user-images.githubusercontent.com/38934586/206194316-52273453-30d2-424c-a5f7-ef13b82b6ffc.png)
 
+## Gateway
 
-## 폴리글랏 퍼시스턴스
+- 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
 
-앱프런트 (app) 는 서비스 특성상 많은 사용자의 유입과 상품 정보의 다양한 콘텐츠를 저장해야 하는 특징으로 인해 RDB 보다는 Document DB / NoSQL 계열의 데이터베이스인 Mongo DB 를 사용하기로 하였다. 이를 위해 order 의 선언에는 @Entity 가 아닌 @Document 로 마킹되었으며, 별다른 작업없이 기존의 Entity Pattern 과 Repository Pattern 적용과 데이터베이스 제품의 설정 (application.yml) 만으로 MongoDB 에 부착시켰다
+![image](https://user-images.githubusercontent.com/38934586/205929638-ac2b0e80-76bc-4b3d-8b42-41df2082c9a9.png)
 
-```
 # Order.java
 
 package fooddelivery;
