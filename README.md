@@ -139,10 +139,11 @@ public void wheneverOrderCanceled_UpdateStatus(@Payload OrderCanceled orderCance
 ```
 
 ## Request/Response
-- orderId가 있으면 요리를 시작한다
+- orderId가 들어오면 주문을 받는다
 ![image](https://user-images.githubusercontent.com/38934586/206200554-f74ac119-46a4-41f2-99f0-74897bda11a5.png)
 
 - 주문 후 stock 줄어드는 것을 확인한다
+**** 위에 소스 decreasStock으로 수정 후 캡처해서 올리기
 ```
 @RequestMapping(value = "foodCookings/{id}/decreaseStock", method = RequestMethod.PUT, produces = "application/json;charset=UTF-8")
 public FoodCooking decreaseStock(@PathVariable(value = "id") Long id, @RequestBody DecreaseStockCommand decreaseStockCommand, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -155,7 +156,7 @@ public FoodCooking decreaseStock(@PathVariable(value = "id") Long id, @RequestBo
 	foodCooking.decreaseStock(decreaseStockCommand);
 
 	foodCookingRepository.save(foodCooking);
-	return foodCooking;  
+	return foodCooking;
 }
 ```
 
