@@ -119,7 +119,24 @@ mvn spring-boot:run
 
 ## Compensation/Correlation
 - 주문이 취소될 때 Compensation이 발생한다.
+```
+@PreRemove
+public void onpreRemove() {
+  Ordercanceled orderCanceled = new OrderCanceled(this);
+  orderCanceled.publishAfterCommit();
+}
+```
 - 주문취소 이벤트 OrderCanceled를 publish하면서 store 서비스에서 상태를 변경한다
+```
+@StreamListener(value=KafkaProcessor.INPUT, condition="headers['type']=='OrderCanceled'")
+public void wheneverOrderCanceled_UpdateStatus(@Payload OrderCanceled orderCanceled) {
+	OrderCanceled event = orderCanceled;
+	System.out.println("\n\n#### listener UpdateStatus : " + orderCanceled + "\n\n");
+	
+	// Sample Logic
+	FoodCooking.updateStatus(event);
+}
+```
 
 ## Request/Response
 - orderId가 있으면 요리를 시작한다
