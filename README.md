@@ -142,6 +142,23 @@ public void wheneverOrderCanceled_UpdateStatus(@Payload OrderCanceled orderCance
 - orderId가 있으면 요리를 시작한다
 ![image](https://user-images.githubusercontent.com/38934586/206200554-f74ac119-46a4-41f2-99f0-74897bda11a5.png)
 
+- 주문 후 stock 줄어드는 것을 확인한다
+```
+@RequestMapping(value = "foodCookings/{id}/decreaseStock", method = RequestMethod.PUT, produces = "application/json;charset=UTF-8")
+public FoodCooking decreaseStock(@PathVariable(value = "id") Long id, @RequestBody DecreaseStockCommand decreaseStockCommand, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	System.out.println("##### /foodCooking/decreaseStock  called #####");
+	Optional<FoodCooking> optionalFoodCooking = foodCookingRepository.findById(id);
+
+	optionalFoodCooking.orElseThrow(()-> new Exception("No Entity Found"));
+	FoodCooking foodCooking = optionalFoodCooking.get();
+
+	foodCooking.decreaseStock(decreaseStockCommand);
+
+	foodCookingRepository.save(foodCooking);
+	return foodCooking;  
+}
+```
+
 ## Gateway
 
 - 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
