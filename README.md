@@ -9,7 +9,9 @@
   - [구현](#구현)
     - Saga(Pub/Sub)
     - CQRS
+    - Compensation/Correlation
     - Request/Response
+    - Circuit Breaker
     - Gateway
 
 # 서비스 시나리오
@@ -40,7 +42,7 @@
 # 분석/설계
 
 ## Event Storming 결과
-* MSAEz 로 모델링한 이벤트스토밍 결과
+* MSAEZ 로 모델링한 이벤트스토밍 결과
 
 ### 완성된 모형
 
@@ -140,23 +142,33 @@ public void wheneverOrderCanceled_UpdateStatus(@Payload OrderCanceled orderCance
 
 ## Request/Response
 - orderId가 들어오면 주문을 받는다
-![image](https://user-images.githubusercontent.com/38934586/206200554-f74ac119-46a4-41f2-99f0-74897bda11a5.png)
-
 - 주문 후 stock 줄어드는 것을 확인한다
-**** 위에 소스 decreasStock으로 수정 후 캡처해서 올리기
+![image](https://user-images.githubusercontent.com/38934586/206453279-e856faaa-45b8-4004-ab5c-ffaa3a2f1b77.png)
+
+
+## Circuit Breaker
+- 오더정보 조회를 req/res 방식으로 호출하며, store에서 주문 미확인 특정 시간 이상 경과할 경우 서킷 브레이크가 발생한다
+- front서비스의 application.yml의 hystrix enable은 true로 timeout은 500ms로 설정
 ```
-@RequestMapping(value = "foodCookings/{id}/decreaseStock", method = RequestMethod.PUT, produces = "application/json;charset=UTF-8")
-public FoodCooking decreaseStock(@PathVariable(value = "id") Long id, @RequestBody DecreaseStockCommand decreaseStockCommand, HttpServletRequest request, HttpServletResponse response) throws Exception {
-	System.out.println("##### /foodCooking/decreaseStock  called #####");
-	Optional<FoodCooking> optionalFoodCooking = foodCookingRepository.findById(id);
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 500
+```
 
-	optionalFoodCooking.orElseThrow(()-> new Exception("No Entity Found"));
-	FoodCooking foodCooking = optionalFoodCooking.get();
+- 오더 객체 로드 시 강제 delay 발생(랜덤으로 400ms에서 600ms 미만의 초)	
+```
+@PostLoad
+public void makeOrderDelay(){
+    try {
+        Thread.currentThread().sleep((long) (400 + Math.random() * 200));
 
-	foodCooking.decreaseStock(decreaseStockCommand);
-
-	foodCookingRepository.save(foodCooking);
-	return foodCooking;
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
 }
 ```
 
